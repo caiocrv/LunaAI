@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Luna AI</title>
+    <style>
+        body {
+            background-color: #0b3d91; /* Fundo azul escuro lembrando o céu noturno */
+            font-family: 'Arial', sans-serif;
+            color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); /* Padrão de estrelas */
+        }
+
+        .container {
+            background-color: #1c1c1c; /* Fundo cinza escuro */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            border: 1px solid #444;
+        }
+
+        h1 {
+            color: #f4f4f9;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        button {
+            background-color: #f4f4f9;
+            border: none;
+            border-radius: 5px;
+            color: #0b3d91;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #d1d1d1;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #333;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            font-size: 1.1em;
+            color: #f4f4f9;
+            word-wrap: break-word;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #fff, #0b3d91);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.5);
+            transform: translateX(-50%);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Luna AI</h1>
+        <button id="voiceButton">Clique para Falar</button>
+        <div id="response" class="response"></div>
+        <audio id="audioPlayer" controls style="display:none;">
+            <source id="audioSource" src="" type="audio/mp3">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+    </div>
+
+    <script>
+        document.getElementById('voiceButton').addEventListener('click', function() {
+            ativarReconhecimentoVoz();
+        });
+
+        function ativarReconhecimentoVoz() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Seu navegador não suporta reconhecimento de voz. Por favor, use o Google Chrome.");
+            } else {
+                const recognition = new webkitSpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = function() {
+                    console.log("Reconhecimento de voz iniciado.");
+                };
+
+                recognition.onresult = function(event) {
+                    const comando = event.results[0][0].transcript;
+                    console.log("Você disse: ", comando);
+                    enviarComando(comando);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error("Erro no reconhecimento de voz: ", event.error);
+                    alert("Erro no reconhecimento de voz: " + event.error);
+                };
+
+                recognition.onend = function() {
+                    console.log("Reconhecimento de voz encerrado.");
+                };
+
+                recognition.start();
+            }
+        }
+
+        function enviarComando(comando) {
+            fetch('/comando', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ comando: comando })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = data.response;
+                if (data.musica) {
+                    const audioPlayer = document.getElementById('audioPlayer');
+                    const audioSource = document.getElementById('audioSource');
+                    audioSource.src = data.musica; // Atualize a URL da música conforme necessário
+                    audioPlayer.style.display = 'block';
+                    audioPlayer.load();
+                    audioPlayer.play();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
