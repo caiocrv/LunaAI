@@ -1,0 +1,9 @@
+Flask==2.0.1
+SpeechRecognition==3.8.1
+Pyttsx3==2.90
+PyWhatKit==5.2
+requests==2.25.1
+beautifulsoup4==4.9.3
+lxml==4.6.3
+certifi==2021.5.30
+setuptools==57.0.0
